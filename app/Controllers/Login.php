@@ -30,6 +30,7 @@ class Login extends Controller
                     'store_id' => $store['id'],
                     'user_email' => $user['email'],
                     'user_role' => $user['role'],
+                    'role_id' => $user['role_id'], // <-- YEH LINE ADD KARO
                     'isLoggedIn' => true,
                 ]);
                 return redirect()->to(base_url('admin/dashboard'));

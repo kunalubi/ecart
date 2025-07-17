@@ -84,4 +84,14 @@ class Autoload extends AutoloadConfig
      * @var array<int, string>
      */
     public $files = [];
+
+    /**
+     * -------------------------------------------------------------------
+     * Helpers
+     * -------------------------------------------------------------------
+     * List of helper names to be loaded automatically upon instantiation.
+     *
+     * @var array
+     */
+    public $helpers = ['permission'];
 }

@@ -29,8 +29,10 @@
                     <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
                         <select class="form-select" id="role" name="role" required>
-                            <option value="admin">Admin</option>
-                            <option value="staff">Staff</option>
+                            <option value="">Select Role</option>
+                            <?php foreach ($roles as $role): ?>
+                                <option value="<?= esc($role['id']) ?>"><?= esc($role['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Add User</button>

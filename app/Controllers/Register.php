@@ -47,12 +47,15 @@ class Register extends Controller
             ], true);
 
             // Create user (superadmin)
+            $roleModel = new \App\Models\RoleModel();
+            $superadminRole = $roleModel->where('name', 'superadmin')->first();
             $userModel->insert([
                 'store_id' => $storeId,
                 'name' => 'Superadmin',
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_DEFAULT),
                 'role' => 'superadmin',
+                'role_id' => $superadminRole ? $superadminRole['id'] : null,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 

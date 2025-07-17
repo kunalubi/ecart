@@ -53,6 +53,9 @@ $routes->get('admin/orders', 'Admin::orders');
 $routes->post('admin/orders/update-status', 'Admin::updateOrderStatus');
 $routes->get('admin/orders/invoice/(:num)', 'Admin::invoice/$1');
 $routes->match(['get','post'], 'track-order', 'Storefront::trackOrder');
+$routes->get('admin/roles', 'Admin::roles');
+$routes->match(['get', 'post'], 'admin/manageRolePermissions', 'Admin::manageRolePermissions');
+$routes->match(['get', 'post'], 'admin/manageRolePermissions/(:num)', 'Admin::manageRolePermissions/$1');
 $routes->get('(:any)', 'Storefront::index'); // Always last!
 
 /*

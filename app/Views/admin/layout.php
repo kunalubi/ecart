@@ -27,10 +27,21 @@
                 <h5 class="text-center mb-4">Admin</h5>
                 <ul class="nav flex-column mb-4">
                     <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/dashboard') ?>">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/categories') ?>">Categories</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/products') ?>">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/orders') ?>">Orders</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/add-user') ?>">Users</a></li>
+                    <?php if (has_permission(session('role_id'), 'categories', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/categories') ?>">Categories</a></li>
+                    <?php endif; ?>
+                    <?php if (has_permission(session('role_id'), 'products', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/products') ?>">Products</a></li>
+                    <?php endif; ?>
+                    <?php if (has_permission(session('role_id'), 'orders', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/orders') ?>">Orders</a></li>
+                    <?php endif; ?>
+                    <?php if (has_permission(session('role_id'), 'users', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/add-user') ?>">Users</a></li>
+                    <?php endif; ?>
+                    <?php if (has_permission(session('role_id'), 'roles', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/roles') ?>">Roles</a></li>
+                    <?php endif; ?>
                     <li class="nav-item"><a class="nav-link text-danger" href="<?= base_url('admin/logout') ?>">Logout</a></li>
                 </ul>
                 <div class="category-tree">
@@ -66,5 +77,6 @@
         </main>
     </div>
 </div>
+
 </body>
 </html> 

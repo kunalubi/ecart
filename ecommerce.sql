@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 16, 2025 at 02:03 PM
+-- Generation Time: Jul 17, 2025 at 08:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -56,20 +56,26 @@ CREATE TABLE `orders` (
   `user_id` int(11) DEFAULT NULL,
   `customer_name` varchar(100) DEFAULT NULL,
   `customer_email` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
   `total` decimal(10,2) NOT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'pending',
   `payment_method` varchar(50) DEFAULT NULL,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `address` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `store_id`, `user_id`, `customer_name`, `customer_email`, `total`, `status`, `payment_method`, `created_at`) VALUES
-(1, 2, NULL, NULL, NULL, 10.00, 'pending', NULL, '2025-07-16 06:59:39'),
-(2, 2, NULL, NULL, NULL, 23.00, 'pending', NULL, '2025-07-16 06:59:53'),
-(3, 2, NULL, NULL, NULL, 50.00, 'pending', NULL, '2025-07-16 07:01:09');
+INSERT INTO `orders` (`id`, `store_id`, `user_id`, `customer_name`, `customer_email`, `phone`, `total`, `status`, `payment_method`, `created_at`, `address`) VALUES
+(1, 2, NULL, NULL, NULL, NULL, 10.00, 'pending', NULL, '2025-07-16 06:59:39', NULL),
+(2, 2, NULL, NULL, NULL, NULL, 23.00, 'pending', NULL, '2025-07-16 06:59:53', NULL),
+(3, 2, NULL, NULL, NULL, NULL, 50.00, 'pending', NULL, '2025-07-16 07:01:09', NULL),
+(4, 2, NULL, 'edrftgy', NULL, NULL, 195.00, 'pending', 'cod', '2025-07-16 07:30:43', NULL),
+(5, 2, NULL, 'pro 1', NULL, '123456789', 33.00, 'pending', 'cod', '2025-07-16 07:33:21', NULL),
+(6, 2, NULL, 'test 2', 'test@gmail.com', '12345678', 33.00, 'pending', 'upi', '2025-07-16 07:38:15', NULL),
+(7, 2, NULL, 'test final ', 'final@gmail.co', '23456', 33.00, 'processing', 'cod', '2025-07-16 07:44:11', 'filabl');
 
 -- --------------------------------------------------------
 
@@ -92,7 +98,14 @@ CREATE TABLE `order_items` (
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
 (1, 1, 1, 1, 10.00),
 (2, 2, 2, 1, 23.00),
-(3, 3, 3, 1, 50.00);
+(3, 3, 3, 1, 50.00),
+(4, 4, 3, 1, 50.00),
+(5, 4, 2, 2, 23.00),
+(6, 4, 6, 2, 33.00),
+(7, 4, 5, 1, 33.00),
+(8, 5, 6, 1, 33.00),
+(9, 6, 5, 1, 33.00),
+(10, 7, 5, 1, 33.00);
 
 -- --------------------------------------------------------
 
@@ -130,7 +143,9 @@ INSERT INTO `products` (`id`, `store_id`, `category_id`, `name`, `description`, 
 (1, 2, 1, 'product 1', 'yes', 10.00, NULL, '2025-07-16 06:15:34'),
 (2, 2, 1, 'product 2', 'ef', 23.00, NULL, '2025-07-16 06:31:51'),
 (3, 2, 3, 'product - 3', 'df', 50.00, NULL, '2025-07-16 06:32:46'),
-(4, 2, 2, 'product 4', 'df', 55.00, NULL, '2025-07-16 06:33:06');
+(4, 2, 2, 'product 4', 'df', 55.00, NULL, '2025-07-16 06:33:06'),
+(5, 2, 2, 'product 5', 'rf', 33.00, NULL, '2025-07-16 07:11:27'),
+(6, 2, 2, 'product 5', 'rf', 33.00, NULL, '2025-07-16 07:12:12');
 
 -- --------------------------------------------------------
 
@@ -270,13 +285,13 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -288,7 +303,7 @@ ALTER TABLE `permissions`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `stores`
