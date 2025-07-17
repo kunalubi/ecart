@@ -84,6 +84,16 @@ $orderStatusCounts = isset($orderStatusCounts) ? $orderStatusCounts : [
         </div>
     </div>
 </div>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-white"><h5 class="mb-0">Inventory Overview</h5></div>
+            <div class="card-body">
+                <canvas id="inventoryChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const productsData = <?= json_encode($productsData) ?>;
@@ -161,6 +171,33 @@ new Chart(document.getElementById('ordersStatusChart').getContext('2d'), {
         }]
     },
     options: {responsive: true, plugins: {legend: {display: true}}}
+});
+const inventoryLabels = <?= json_encode($inventoryLabels) ?>;
+const inventoryData = <?= json_encode($inventoryData) ?>;
+const inventoryChart = new Chart(document.getElementById('inventoryChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: inventoryLabels,
+        datasets: [{
+            label: 'Stock',
+            data: inventoryData,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        aspectRatio: 2.5,
+        plugins: {
+            legend: { display: false },
+            title: { display: false }
+        },
+        scales: {
+            x: { title: { display: true, text: 'Product' } },
+            y: { beginAtZero: true, title: { display: true, text: 'Stock' } }
+        }
+    }
 });
 </script>
 <?= $this->endSection() ?> 

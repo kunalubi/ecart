@@ -7,18 +7,21 @@
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
                     <tr>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>Parent</th>
                         <th>Created At</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($categories)): ?>
                         <?php foreach ($categories as $cat): ?>
                             <tr>
+                                <td><?= esc($cat['id']) ?></td>
                                 <td><?= esc($cat['name']) ?></td>
                                 <td>
                                     <?php
@@ -35,6 +38,14 @@
                                     ?>
                                 </td>
                                 <td><?= esc($cat['created_at']) ?></td>
+                                <td>
+                                    <?php if (has_permission(session('role_id'), 'categories', 'edit')): ?>
+                                        <a href="<?= base_url('admin/edit-category/' . $cat['id']) ?>" class="btn btn-sm btn-primary">Edit</a>
+                                    <?php endif; ?>
+                                    <?php if (has_permission(session('role_id'), 'categories', 'delete')): ?>
+                                        <a href="<?= base_url('admin/delete-category/' . $cat['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>

@@ -9,10 +9,9 @@
     <div class="alert alert-success"> <?= esc($success) ?> </div>
 <?php endif; ?>
 
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">Select Role</div>
-    <div class="card-body">
-        <form method="get" action="<?= base_url('admin/manageRolePermissions') ?>" class="row g-3">
+<div class="card shadow-sm mb-4" style="max-width: 900px; margin:auto;">
+    <div class="card-header bg-primary text-white py-2">
+        <form method="get" action="<?= base_url('admin/manageRolePermissions') ?>" class="row g-3 align-items-center mb-0">
             <div class="col-md-8">
                 <select name="roleId" class="form-select" onchange="this.form.submit()">
                     <option value="">--Select Role--</option>
@@ -23,35 +22,52 @@
             </div>
         </form>
     </div>
-</div>
-
+    <div class="card-body p-3">
 <?php if (empty($roles)): ?>
     <div class="alert alert-info">No roles found for this store. Please add a role first.</div>
 <?php elseif (empty($permissions)): ?>
     <div class="alert alert-warning">No permissions found. Please add permissions in the database.</div>
 <?php elseif (isset($selectedRole) && $selectedRole): ?>
-    <h4 class="mb-3">Permissions for: <span class="text-primary"><?= esc($selectedRole['name']) ?></span></h4>
     <form method="post">
-        <table class="table table-bordered table-striped align-middle">
+        <table class="table table-sm table-bordered table-striped align-middle mb-2 text-center" style="font-size:0.95rem;">
             <thead class="table-light">
                 <tr>
-                    <th>Module</th>
-                    <th>Action</th>
-                    <th>Allow</th>
+                    <th style="width:25%">Module</th>
+                    <th style="width:15%">View</th>
+                    <th style="width:15%">Add</th>
+                    <th style="width:15%">Edit</th>
+                    <th style="width:15%">Delete</th>
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($permissions as $perm): ?>
+            <?php
+            // Group permissions by module
+            $modules = [];
+            foreach ($permissions as $perm) {
+                $modules[$perm['module']][$perm['action']] = $perm['id'];
+            }
+            $actions = ['view', 'add', 'edit', 'delete'];
+            ?>
+            <?php foreach ($modules as $module => $acts): ?>
                 <tr>
-                    <td><?= esc($perm['module']) ?></td>
-                    <td><?= esc($perm['action']) ?></td>
-                    <td><input type="checkbox" name="permissions[]" value="<?= esc($perm['id']) ?>" <?= in_array($perm['id'], $rolePermissions) ? 'checked' : '' ?>></td>
+                    <td class="text-start"><strong><?= esc(ucfirst($module)) ?></strong></td>
+                    <?php foreach ($actions as $action): ?>
+                        <td>
+                            <?php if (isset($acts[$action])): ?>
+                                <input type="checkbox" name="permissions[]" value="<?= esc($acts[$action]) ?>" <?= in_array($acts[$action], $rolePermissions) ? 'checked' : '' ?> style="width:16px;height:16px;">
+                            <?php endif; ?>
+                        </td>
+                    <?php endforeach; ?>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
-        <button type="submit" class="btn btn-success">Update Permissions</button>
+        <div class="text-end">
+            <button type="submit" class="btn btn-success btn-sm">Update Permissions</button>
+        </div>
     </form>
 <?php endif; ?>
+    </div>
+</div>
 
 <?php $this->endSection(); ?> 

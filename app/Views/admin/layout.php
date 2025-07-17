@@ -1,9 +1,10 @@
+<?php helper('permission'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($store['name']) ?> - Admin Panel</title>
+    <title><?= isset($store) ? esc($store['name']) : 'Admin Panel' ?> Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #f8f9fa; }
@@ -19,6 +20,14 @@
     </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="<?= base_url('admin/dashboard') ?>"><?= isset($store) ? esc($store['name']) : 'Admin Panel' ?></a>
+        <div class="d-flex align-items-center ms-auto">
+            <span class="text-white me-3"><i class="bi bi-person-circle"></i> <?= esc(session('name')) ?></span>
+        </div>
+    </div>
+</nav>
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
@@ -37,11 +46,15 @@
                         <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/orders') ?>">Orders</a></li>
                     <?php endif; ?>
                     <?php if (has_permission(session('role_id'), 'users', 'view')): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/add-user') ?>">Users</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/users') ?>">Users</a></li>
                     <?php endif; ?>
                     <?php if (has_permission(session('role_id'), 'roles', 'view')): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/roles') ?>">Roles</a></li>
                     <?php endif; ?>
+                    <?php if (has_permission(session('role_id'), 'inventory', 'view')): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_url('admin/inventory') ?>">Inventory</a></li>
+                    <?php endif; ?>
+                    <li class="nav-item"><a class="nav-link" href="<?= base_url('profile/view') ?>">Profile</a></li>
                     <li class="nav-item"><a class="nav-link text-danger" href="<?= base_url('admin/logout') ?>">Logout</a></li>
                 </ul>
                 <div class="category-tree">
@@ -71,7 +84,9 @@
         <!-- Main Content -->
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3><?= esc($store['name']) ?> Admin Panel</h3>
+                <h3>
+                Admin Panel
+                </h3>
             </div>
             <?= $this->renderSection('content') ?>
         </main>

@@ -37,6 +37,17 @@ class Admin extends BaseController
         $productModel = new \App\Models\ProductModel();
         $products = $productModel->where('store_id', $store_id)->findAll();
 
+        // Inventory for graph
+        $inventoryModel = new \App\Models\InventoryModel();
+        $inventory = $inventoryModel->where('store_id', $store_id)->findAll();
+        $inventoryLabels = [];
+        $inventoryData = [];
+        foreach ($inventory as $inv) {
+            $prod = $productModel->find($inv['product_id']);
+            $inventoryLabels[] = $prod ? $prod['name'] : 'Unknown';
+            $inventoryData[] = $inv['stock'];
+        }
+
         // Categories
         $categoryModel = new \App\Models\CategoryModel();
         $categories = $categoryModel->where('store_id', $store_id)->findAll();
@@ -64,7 +75,35 @@ class Admin extends BaseController
             'users' => $users,
             'orders' => $orders,
             'orderStatusCounts' => $orderStatusCounts,
+            'inventoryLabels' => $inventoryLabels,
+            'inventoryData' => $inventoryData,
         ]);
+    }
+
+    public function users()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'users', 'view')) {
+            return redirect()->to(base_url('admin/dashboard'))->with('error', 'You do not have permission to view users.');
+        }
+        $subdomain = getSubdomain();
+        if (!$subdomain) {
+            return redirect()->to(base_url('register'));
+        }
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $userModel = new \App\Models\UserModel();
+        $users = $userModel->where('store_id', $store['id'])->findAll();
+        return view('admin/users', ['store' => $store, 'users' => $users]);
     }
 
     public function addUser()
@@ -73,7 +112,7 @@ class Admin extends BaseController
             return redirect()->to(base_url('login'));
         }
         if (!has_permission(session('role_id'), 'users', 'add')) {
-            return redirect()->to(base_url('admin/dashboard'))->with('error', 'You do not have permission to add users.');
+            return redirect()->to(base_url('admin/users'))->with('error', 'You do not have permission to add users.');
         }
         $subdomain = getSubdomain();
         if (!$subdomain) {
@@ -96,7 +135,7 @@ class Admin extends BaseController
             $name = trim($this->request->getPost('name'));
             $email = trim($this->request->getPost('email'));
             $password = $this->request->getPost('password');
-            $role_id = $this->request->getPost('role'); // dropdown se selected role ka id
+            $role_id = $this->request->getPost('role');
             $role = $roleModel->find($role_id);
             if (!$name || !$email || !$password || !$role_id || !$role) {
                 $error = 'All fields are required.';
@@ -110,8 +149,8 @@ class Admin extends BaseController
                         'name' => $name,
                         'email' => $email,
                         'password' => password_hash($password, PASSWORD_DEFAULT),
-                        'role' => $role['name'],   // role ka name
-                        'role_id' => $role['id'],  // role ka id (yeh zaruri hai!)
+                        'role' => $role['name'],
+                        'role_id' => $role['id'],
                         'created_at' => date('Y-m-d H:i:s'),
                     ]);
                     $success = 'User added successfully!';
@@ -119,6 +158,52 @@ class Admin extends BaseController
             }
         }
         return view('admin/add_user', ['store' => $store, 'roles' => $roles, 'error' => $error, 'success' => $success]);
+    }
+
+    public function editUser($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'users', 'edit')) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'You do not have permission to edit users.');
+        }
+        $userModel = new \App\Models\UserModel();
+        $roleModel = new \App\Models\RoleModel();
+        $user = $userModel->find($id);
+        if (!$user) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'User not found.');
+        }
+        $roles = $roleModel->where('store_id', $user['store_id'])->where('name !=', 'superadmin')->findAll();
+        $error = $success = '';
+        if ($this->request->getMethod() === 'post') {
+            $name = trim($this->request->getPost('name'));
+            $email = trim($this->request->getPost('email'));
+            $role_id = $this->request->getPost('role');
+            $password = $this->request->getPost('password');
+            $role = $roleModel->find($role_id);
+            $data = ['name' => $name, 'email' => $email, 'role_id' => $role_id, 'role' => $role['name']];
+            if ($password) {
+                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+            $userModel->update($id, $data);
+            $success = 'User updated successfully!';
+            $user = $userModel->find($id);
+        }
+        return view('admin/edit_user', ['user' => $user, 'roles' => $roles, 'error' => $error, 'success' => $success]);
+    }
+
+    public function deleteUser($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'users', 'delete')) {
+            return redirect()->to(base_url('admin/users'))->with('error', 'You do not have permission to delete users.');
+        }
+        $userModel = new \App\Models\UserModel();
+        $userModel->delete($id);
+        return redirect()->to(base_url('admin/users'))->with('success', 'User deleted successfully!');
     }
 
     public function categories()
@@ -248,9 +333,25 @@ class Admin extends BaseController
             $category_id = $this->request->getPost('category_id');
             $price = $this->request->getPost('price');
             $description = $this->request->getPost('description');
+            $img = $this->request->getFile('image');
+            $imageName = null;
+            if ($img && $img->isValid() && !$img->hasMoved()) {
+                $ext = strtolower($img->getExtension());
+                if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                    $error = 'Only JPG and PNG images are allowed.';
+                } else {
+                    $productName = url_title($this->request->getPost('name'), '_', true);
+                    $storeDir = ROOTPATH . 'public/uploads/' . $store['id'];
+                    if (!is_dir($storeDir)) {
+                        mkdir($storeDir, 0777, true);
+                    }
+                    $imageName = $productName . '.' . $ext;
+                    $img->move($storeDir, $imageName, true);
+                }
+            }
             if (!$name || !$category_id || !$price) {
                 $error = 'Name, category, and price are required.';
-            } else {
+            } else if (empty($error)) {
                 $productModel = new \App\Models\ProductModel();
                 $productModel->insert([
                     'store_id' => $store['id'],
@@ -258,12 +359,35 @@ class Admin extends BaseController
                     'name' => $name,
                     'description' => $description,
                     'price' => $price,
+                    'image' => $imageName,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
                 $success = 'Product added successfully!';
             }
         }
         return view('admin/add_product', ['store' => $store, 'categories' => $categories, 'error' => $error, 'success' => $success]);
+    }
+
+    public function deleteProduct($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'products', 'delete')) {
+            return redirect()->to(base_url('admin/products'))->with('error', 'You do not have permission to delete products.');
+        }
+        $productModel = new \App\Models\ProductModel();
+        $product = $productModel->find($id);
+        if ($product && $product['image']) {
+            // Get store id for correct folder
+            $store_id = $product['store_id'];
+            $imagePath = ROOTPATH . 'public/uploads/' . $store_id . '/' . $product['image'];
+            if (is_file($imagePath)) {
+                @unlink($imagePath);
+            }
+        }
+        $productModel->delete($id);
+        return redirect()->to(base_url('admin/products'))->with('success', 'Product deleted successfully!');
     }
 
     public function orders()
@@ -441,5 +565,275 @@ class Admin extends BaseController
             'success' => $success,
             'error' => $error
         ]);
+    }
+
+    public function editCategory($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'categories', 'edit')) {
+            return redirect()->to(base_url('admin/categories'))->with('error', 'You do not have permission to edit categories.');
+        }
+        $subdomain = getSubdomain();
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $categoryModel = new \App\Models\CategoryModel();
+        $category = $categoryModel->find($id);
+        if (!$category) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Category not found');
+        }
+        $error = null;
+        $success = null;
+        if ($this->request->getMethod() === 'post') {
+            $name = trim($this->request->getPost('name'));
+            $parent_id = $this->request->getPost('parent_id') ?: null;
+            if (!$name) {
+                $error = 'Category name is required.';
+            } else {
+                $categoryModel->update($id, [
+                    'name' => $name,
+                    'parent_id' => $parent_id
+                ]);
+                $success = 'Category updated successfully!';
+                // Optionally redirect to categories list
+                return redirect()->to(base_url('admin/categories'))->with('success', $success);
+            }
+        }
+        return view('admin/edit_category', [
+            'store' => $store, // <-- yeh line add karo
+            'category' => $category,
+            'error' => $error,
+            'success' => $success
+        ]);
+    }
+
+    public function deleteCategory($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'categories', 'delete')) {
+            return redirect()->to(base_url('admin/categories'))->with('error', 'You do not have permission to delete categories.');
+        }
+        $categoryModel = new \App\Models\CategoryModel();
+        $categoryModel->delete($id);
+        return redirect()->to(base_url('admin/categories'))->with('success', 'Category deleted successfully!');
+    }
+
+    public function editProduct($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'products', 'edit')) {
+            return redirect()->to(base_url('admin/products'))->with('error', 'You do not have permission to edit products.');
+        }
+        $subdomain = getSubdomain();
+        if (!$subdomain) {
+            return redirect()->to(base_url('register'));
+        }
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $productModel = new \App\Models\ProductModel();
+        $categoryModel = new \App\Models\CategoryModel();
+        $product = $productModel->where('store_id', $store['id'])->find($id);
+        if (!$product) {
+            return redirect()->to(base_url('admin/products'))->with('error', 'Product not found.');
+        }
+        $categories = $categoryModel->where('store_id', $store['id'])->findAll();
+        $error = $success = '';
+        if ($this->request->getMethod() === 'post') {
+            $data = [
+                'name' => $this->request->getPost('name'),
+                'description' => $this->request->getPost('description'),
+                'price' => $this->request->getPost('price'),
+                'category_id' => $this->request->getPost('category_id'),
+            ];
+            $img = $this->request->getFile('image');
+            if ($img && $img->isValid() && !$img->hasMoved()) {
+                $ext = strtolower($img->getExtension());
+                if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                    $error = 'Only JPG and PNG images are allowed.';
+                } else {
+                    $productName = url_title($this->request->getPost('name'), '_', true);
+                    $storeDir = ROOTPATH . 'public/uploads/' . $store['id'];
+                    if (!is_dir($storeDir)) {
+                        mkdir($storeDir, 0777, true);
+                    }
+                    $imageName = $productName . '.' . $ext;
+                    $img->move($storeDir, $imageName, true);
+                    // Delete old image if exists
+                    if ($product['image']) {
+                        $oldPath = $storeDir . '/' . $product['image'];
+                        if (file_exists($oldPath)) {
+                            @unlink($oldPath);
+                        }
+                    }
+                    $data['image'] = $imageName;
+                }
+            }
+            if (empty($error)) {
+                $productModel->update($id, $data);
+                $success = 'Product updated successfully!';
+                $product = $productModel->find($id);
+            }
+        }
+        return view('admin/edit_product', [
+            'store' => $store,
+            'product' => $product,
+            'categories' => $categories,
+            'error' => $error,
+            'success' => $success
+        ]);
+    }
+
+    public function inventory()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'inventory', 'view')) {
+            return redirect()->to(base_url('admin/dashboard'))->with('error', 'You do not have permission to view inventory.');
+        }
+        $subdomain = getSubdomain();
+        if (!$subdomain) {
+            return redirect()->to(base_url('register'));
+        }
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $inventoryModel = new \App\Models\InventoryModel();
+        $productModel = new \App\Models\ProductModel();
+        $inventory = $inventoryModel->where('store_id', $store['id'])->findAll();
+        // Attach product names
+        foreach ($inventory as &$inv) {
+            $product = $productModel->find($inv['product_id']);
+            $inv['product_name'] = $product ? $product['name'] : 'Unknown';
+        }
+        return view('admin/inventory', ['store' => $store, 'inventory' => $inventory]);
+    }
+
+    public function addInventory()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'inventory', 'add')) {
+            return redirect()->to(base_url('admin/inventory'))->with('error', 'You do not have permission to add inventory.');
+        }
+        $subdomain = getSubdomain();
+        if (!$subdomain) {
+            return redirect()->to(base_url('register'));
+        }
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $productModel = new \App\Models\ProductModel();
+        $products = $productModel->where('store_id', $store['id'])->findAll();
+        $error = $success = '';
+        if ($this->request->getMethod() === 'post') {
+            $product_id = $this->request->getPost('product_id');
+            $stock = $this->request->getPost('stock');
+            if (!$product_id || $stock === '' || !is_numeric($stock)) {
+                $error = 'Product and stock are required.';
+            } else {
+                $inventoryModel = new \App\Models\InventoryModel();
+                // Check if already exists
+                $existing = $inventoryModel->where('store_id', $store['id'])->where('product_id', $product_id)->first();
+                if ($existing) {
+                    $error = 'Inventory for this product already exists.';
+                } else {
+                    $inventoryModel->insert([
+                        'store_id' => $store['id'],
+                        'product_id' => $product_id,
+                        'stock' => $stock,
+                    ]);
+                    $success = 'Inventory added successfully!';
+                }
+            }
+        }
+        return view('admin/add_inventory', ['store' => $store, 'products' => $products, 'error' => $error, 'success' => $success]);
+    }
+
+    public function editInventory($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'inventory', 'edit')) {
+            return redirect()->to(base_url('admin/inventory'))->with('error', 'You do not have permission to edit inventory.');
+        }
+        $subdomain = getSubdomain();
+        if (!$subdomain) {
+            return redirect()->to(base_url('register'));
+        }
+        $storeModel = new \App\Models\StoreModel();
+        $store = $storeModel->where('subdomain', $subdomain)->first();
+        if (!$store) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
+        }
+        if (session()->get('store_id') != $store['id']) {
+            session()->destroy();
+            return redirect()->to(base_url('login'));
+        }
+        $inventoryModel = new \App\Models\InventoryModel();
+        $productModel = new \App\Models\ProductModel();
+        $inventory = $inventoryModel->where('store_id', $store['id'])->find($id);
+        if (!$inventory) {
+            return redirect()->to(base_url('admin/inventory'))->with('error', 'Inventory not found.');
+        }
+        $product = $productModel->find($inventory['product_id']);
+        $error = $success = '';
+        if ($this->request->getMethod() === 'post') {
+            $stock = $this->request->getPost('stock');
+            if ($stock === '' || !is_numeric($stock)) {
+                $error = 'Stock is required.';
+            } else {
+                $inventoryModel->update($id, ['stock' => $stock]);
+                $success = 'Inventory updated successfully!';
+                $inventory = $inventoryModel->find($id);
+            }
+        }
+        return view('admin/edit_inventory', ['store' => $store, 'inventory' => $inventory, 'product' => $product, 'error' => $error, 'success' => $success]);
+    }
+
+    public function deleteInventory($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+        if (!has_permission(session('role_id'), 'inventory', 'delete')) {
+            return redirect()->to(base_url('admin/inventory'))->with('error', 'You do not have permission to delete inventory.');
+        }
+        $inventoryModel = new \App\Models\InventoryModel();
+        $inventoryModel->delete($id);
+        return redirect()->to(base_url('admin/inventory'))->with('success', 'Inventory deleted successfully!');
     }
 }

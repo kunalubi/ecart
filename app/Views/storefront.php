@@ -26,11 +26,18 @@
                                 <h5 class="card-title"><?= esc($product['name']) ?></h5>
                                 <h6 class="card-subtitle mb-2 text-muted">₹<?= esc($product['price']) ?></h6>
                                 <p class="card-text"><?= esc($product['description']) ?></p>
-                                <form method="post" action="<?= base_url('cart/add') ?>">
-                                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                    <input type="number" name="qty" value="1" min="1" class="form-control mb-2" style="width: 90px; display: inline-block;">
-                                    <button type="submit" class="btn btn-success">Add to Cart</button>
-                                </form>
+                                <?php if (!empty($product['image'])): ?>
+                                    <img src="<?= base_url('../public/uploads/' . $product['store_id'] . '/' . $product['image']) ?>" alt="Product Image" style="width:100px;height:100px;object-fit:cover;">
+                                <?php endif; ?>
+                                <?php if ($product['stock'] === null || $product['stock'] <= 0): ?>
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                <?php else: ?>
+                                    <form method="post" action="<?= base_url('cart/add') ?>">
+                                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                        <input type="number" name="qty" value="1" min="1" max="<?= $product['stock'] ?>" class="form-control mb-2" style="width: 90px; display: inline-block;">
+                                        <button type="submit" class="btn btn-success">Add to Cart</button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

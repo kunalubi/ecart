@@ -98,14 +98,21 @@ class Cart extends Controller
             return redirect()->to(base_url('cart'))->with('error', 'Cart is empty.');
         }
 
+        // Check inventory stock for each product
+        $inventoryModel = new \App\Models\InventoryModel();
+        foreach ($cart as $item) {
+            $inv = $inventoryModel->where('store_id', $storeId)->where('product_id', $item['id'])->first();
+            if (!$inv || $inv['stock'] < $item['qty']) {
+                return redirect()->to(base_url('cart'))->with('error', 'Insufficient stock for ' . $item['name']);
+            }
+        }
+
         // No validation, just get fields (can be empty)
         $name = $this->request->getPost('name');
         $email = $this->request->getPost('email');
         $payment = $this->request->getPost('payment_method');
         $phone = $this->request->getPost('phone');
         $address = $this->request->getPost('address');
- 
-
 
         $cartTotal = array_sum(array_map(fn($i) => $i['price'] * $i['qty'], $cart));
         $orderModel = new OrderModel();
@@ -134,6 +141,11 @@ class Cart extends Controller
                 'quantity'   => $item['qty'],
                 'price'      => $item['price'],
             ]);
+            // Decrement inventory
+            $inv = $inventoryModel->where('store_id', $storeId)->where('product_id', $item['id'])->first();
+            if ($inv) {
+                $inventoryModel->update($inv['id'], ['stock' => $inv['stock'] - $item['qty']]);
+            }
         }
 
         session()->remove('cart');

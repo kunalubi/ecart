@@ -17,10 +17,14 @@ class Storefront extends Controller
         if (!$store) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Store not found');
         }
-        // Fetch only this store's products
         $productModel = new ProductModel();
         $products = $productModel->where('store_id', $store['id'])->findAll();
-
+        // Attach stock from inventory
+        $inventoryModel = new \App\Models\InventoryModel();
+        foreach ($products as &$product) {
+            $inv = $inventoryModel->where('store_id', $store['id'])->where('product_id', $product['id'])->first();
+            $product['stock'] = $inv ? $inv['stock'] : null;
+        }
         return view('storefront', [
             'store' => $store,
             'products' => $products

@@ -56,6 +56,20 @@ $routes->match(['get','post'], 'track-order', 'Storefront::trackOrder');
 $routes->get('admin/roles', 'Admin::roles');
 $routes->match(['get', 'post'], 'admin/manageRolePermissions', 'Admin::manageRolePermissions');
 $routes->match(['get', 'post'], 'admin/manageRolePermissions/(:num)', 'Admin::manageRolePermissions/$1');
+$routes->match(['get', 'post'], 'admin/edit-category/(:num)', 'Admin::editCategory/$1');
+$routes->get('admin/delete-category/(:num)', 'Admin::deleteCategory/$1');
+$routes->get('admin/delete-product/(:num)', 'Admin::deleteProduct/$1');
+$routes->match(['get', 'post'], 'admin/edit-product/(:num)', 'Admin::editProduct/$1');
+$routes->get('admin/inventory', 'Admin::inventory');
+$routes->match(['get', 'post'], 'admin/add-inventory', 'Admin::addInventory');
+$routes->match(['get', 'post'], 'admin/edit-inventory/(:num)', 'Admin::editInventory/$1');
+$routes->get('admin/delete-inventory/(:num)', 'Admin::deleteInventory/$1');
+$routes->get('admin/users', 'Admin::users');
+$routes->match(['get', 'post'], 'admin/add-user', 'Admin::addUser');
+$routes->match(['get', 'post'], 'admin/edit-user/(:num)', 'Admin::editUser/$1');
+$routes->get('admin/delete-user/(:num)', 'Admin::deleteUser/$1');
+$routes->get('profile/view', 'Profile::viewProfile');
+$routes->match(['get', 'post'], 'profile/edit', 'Profile::editProfile');
 $routes->get('(:any)', 'Storefront::index'); // Always last!
 
 /*
