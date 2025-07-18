@@ -6,39 +6,44 @@
     </div>
     <div class="card-body">
         <h2>Orders</h2>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Email</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Date</th>
-            </tr>
-            <?php foreach ($orders as $order): ?>
-            <tr>
-                <td><?= esc($order['id']) ?></td>
-                <td><?= esc($order['customer_name']) ?></td>
-                <td><?= esc($order['customer_email']) ?></td>
-                <td><?= esc($order['total']) ?></td>
-                <td>
-                    <form method="post" action="<?= base_url('admin/orders/update-status') ?>">
-                        <input type="hidden" name="order_id" value="<?= esc($order['id']) ?>">
-                        <select name="status" onchange="this.form.submit()">
-                            <?php foreach (['pending','processing','shipped','delivered','cancelled'] as $s): ?>
-                                <option value="<?= $s ?>" <?= $order['status']==$s?'selected':'' ?>><?= ucfirst($s) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </form>
-                </td>
-                <td><?= esc($order['payment_method']) ?></td>
-                <td><?= esc($order['created_at']) ?></td>
-                <td>
-                    <a href="<?= base_url('admin/orders/invoice/'.$order['id']) ?>" class="btn btn-sm btn-info" target="_blank">Invoice</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($orders as $order): ?>
+                <tr>
+                    <td><?= esc($order['id']) ?></td>
+                    <td><?= esc($order['customer_name']) ?></td>
+                    <td><?= esc($order['customer_email']) ?></td>
+                    <td><?= esc($order['total']) ?></td>
+                    <td>
+                        <form method="post" action="<?= base_url('admin/orders/update-status') ?>">
+                            <input type="hidden" name="order_id" value="<?= esc($order['id']) ?>">
+                            <select name="status" class="form-control" onchange="this.form.submit()">
+                                <?php foreach (['pending','processing','shipped','delivered','cancelled'] as $s): ?>
+                                    <option value="<?= $s ?>" <?= $order['status'] == $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+                    </td>
+                    <td><?= esc($order['payment_method']) ?></td>
+                    <td><?= esc($order['created_at']) ?></td>
+                    <td>
+                        <a href="<?= base_url('admin/orders/invoice/' . $order['id']) ?>" class="btn btn-sm btn-info" target="_blank">Invoice</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
         </table>
     </div>
 </div>

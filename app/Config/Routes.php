@@ -69,6 +69,7 @@ $routes->get('admin/users', 'Admin::users');
 $routes->match(['get', 'post'], 'admin/add-user', 'Admin::addUser');
 $routes->match(['get', 'post'], 'admin/edit-user/(:num)', 'Admin::editUser/$1');
 $routes->get('admin/delete-user/(:num)', 'Admin::deleteUser/$1');
+$routes->post('admin/update-user-status', 'Admin::updateUserStatus');
 $routes->get('profile/view', 'Profile::viewProfile');
 $routes->match(['get', 'post'], 'profile/edit', 'Profile::editProfile');
 $routes->get('masteradmin/dashboard', 'MasterAdmin::dashboard');

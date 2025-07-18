@@ -206,6 +206,22 @@ class Admin extends BaseController
         return redirect()->to(base_url('admin/users'))->with('success', 'User deleted successfully!');
     }
 
+    public function updateUserStatus()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $request = $this->request->getJSON();
+        $userId = $request->userId;
+        $status = $request->status;
+
+        $userModel = new \App\Models\UserModel();
+        $userModel->update($userId, ['status' => $status]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
     public function categories()
     {
         if (!session()->get('isLoggedIn')) {
