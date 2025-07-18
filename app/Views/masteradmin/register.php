@@ -20,7 +20,7 @@
                                 <?= session()->getFlashdata('error') ?>
                             </div>
                         <?php endif; ?>
-                        <form method="post" action="<?= base_url('register') ?>">
+                        <form method="post" action="<?= base_url('masteradmin/register') ?>">
                             <div class="mb-3">
                                 <label for="store_name" class="form-label">Store Name</label>
                                 <input type="text" class="form-control" id="store_name" name="store_name" required>

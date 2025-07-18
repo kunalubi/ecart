@@ -21,7 +21,7 @@ $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
-$routes->setAutoRoute(true);
+$routes->setAutoRoute(false);
 
 /*
  * --------------------------------------------------------------------
@@ -32,7 +32,8 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
-$routes->match(['get', 'post'], 'register', 'Register::index');
+$routes->get('register', function() { return redirect()->to(base_url('/')); });
+$routes->get('index.php/register', function() { return redirect()->to(base_url('/')); });
 $routes->match(['get', 'post'], 'login', 'Login::index');
 $routes->get('admin/dashboard', 'Admin::dashboard');
 $routes->match(['get', 'post'], 'admin/add-user', 'Admin::addUser');
@@ -53,7 +54,7 @@ $routes->get('admin/orders', 'Admin::orders');
 $routes->post('admin/orders/update-status', 'Admin::updateOrderStatus');
 $routes->get('admin/orders/invoice/(:num)', 'Admin::invoice/$1');
 $routes->match(['get','post'], 'track-order', 'Storefront::trackOrder');
-$routes->get('admin/roles', 'Admin::roles');
+$routes->match(['get', 'post'], 'admin/roles', 'Admin::roles');
 $routes->match(['get', 'post'], 'admin/manageRolePermissions', 'Admin::manageRolePermissions');
 $routes->match(['get', 'post'], 'admin/manageRolePermissions/(:num)', 'Admin::manageRolePermissions/$1');
 $routes->match(['get', 'post'], 'admin/edit-category/(:num)', 'Admin::editCategory/$1');
@@ -70,6 +71,12 @@ $routes->match(['get', 'post'], 'admin/edit-user/(:num)', 'Admin::editUser/$1');
 $routes->get('admin/delete-user/(:num)', 'Admin::deleteUser/$1');
 $routes->get('profile/view', 'Profile::viewProfile');
 $routes->match(['get', 'post'], 'profile/edit', 'Profile::editProfile');
+$routes->get('masteradmin/dashboard', 'MasterAdmin::dashboard');
+$routes->match(['get', 'post'], 'masteradmin/register', 'Register::index');
+$routes->post('masteradmin/approve_store/(:num)', 'MasterAdmin::approve_store/$1');
+$routes->post('masteradmin/reject_store/(:num)', 'MasterAdmin::reject_store/$1');
+$routes->post('masteradmin/delete_store/(:num)', 'MasterAdmin::delete_store/$1');
+$routes->get('masteradmin/logout', 'MasterAdmin::logout');
 $routes->get('(:any)', 'Storefront::index'); // Always last!
 
 /*

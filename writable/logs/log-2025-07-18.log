@@ -1,0 +1,30 @@
+CRITICAL - 2025-07-18 01:54:40 --> Class "App\Controllers\MasterAdminBaseController" not found
+#0 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(264): include_once()
+#1 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(241): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(219): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers...')
+#3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers...')
+#4 C:\xampp\htdocs\ecart\system\CodeIgniter.php(790): class_exists('\\App\\Controller...', true)
+#5 C:\xampp\htdocs\ecart\system\CodeIgniter.php(399): CodeIgniter\CodeIgniter->startController()
+#6 C:\xampp\htdocs\ecart\system\CodeIgniter.php(320): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 C:\xampp\htdocs\ecart\index.php(43): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2025-07-18 01:54:40 --> Class "App\Controllers\MasterAdminBaseController" not found
+#0 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(264): include_once()
+#1 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(241): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(219): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers...')
+#3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers...')
+#4 C:\xampp\htdocs\ecart\system\CodeIgniter.php(790): class_exists('\\App\\Controller...', true)
+#5 C:\xampp\htdocs\ecart\system\CodeIgniter.php(399): CodeIgniter\CodeIgniter->startController()
+#6 C:\xampp\htdocs\ecart\system\CodeIgniter.php(320): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 C:\xampp\htdocs\ecart\index.php(43): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2025-07-18 01:55:10 --> Class "App\Controllers\MasterAdminBaseController" not found
+#0 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(264): include_once()
+#1 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(241): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\ecart\system\Autoloader\Autoloader.php(219): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers...')
+#3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers...')
+#4 C:\xampp\htdocs\ecart\system\CodeIgniter.php(790): class_exists('\\App\\Controller...', true)
+#5 C:\xampp\htdocs\ecart\system\CodeIgniter.php(399): CodeIgniter\CodeIgniter->startController()
+#6 C:\xampp\htdocs\ecart\system\CodeIgniter.php(320): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 C:\xampp\htdocs\ecart\index.php(43): CodeIgniter\CodeIgniter->run()
+#8 {main}

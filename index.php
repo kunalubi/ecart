@@ -27,6 +27,12 @@ $paths = new Config\Paths();
 $bootstrap = rtrim($paths->systemDirectory, '\\/ ') . DIRECTORY_SEPARATOR . 'bootstrap.php';
 $app       = require realpath($bootstrap) ?: $bootstrap;
 
+// If the request is for the base URL, show the landing page
+if ($_SERVER['REQUEST_URI'] === '/ecart/' || $_SERVER['REQUEST_URI'] === '/ecart') {
+    require __DIR__ . '/app/Views/landing.php';
+    exit;
+}
+
 /*
  *---------------------------------------------------------------
  * LAUNCH THE APPLICATION

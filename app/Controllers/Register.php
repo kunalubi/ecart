@@ -1,13 +1,14 @@
 <?php
 namespace App\Controllers;
+
 use App\Models\StoreModel;
 use App\Models\UserModel;
-use CodeIgniter\Controller;
 
-class Register extends Controller
+class Register extends MasterAdminBaseController
 {
     public function index()
     {
+        $this->requireMasterAdmin();
         if ($this->request->getMethod() === 'post') {
             $storeName = trim($this->request->getPost('store_name'));
             $subdomain = strtolower(trim($this->request->getPost('subdomain')));
@@ -38,11 +39,12 @@ class Register extends Controller
                 return redirect()->back()->withInput()->with('error', 'Email already registered.');
             }
 
-            // Create store
+            // Create store (status = pending by default)
             $storeId = $storeModel->insert([
                 'name' => $storeName,
                 'subdomain' => $subdomain,
                 'owner_email' => $email,
+                'status' => 'pending',
                 'created_at' => date('Y-m-d H:i:s'),
             ], true);
 
@@ -59,11 +61,11 @@ class Register extends Controller
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            // Show success message
-            return view('register', [
-                'success' => 'Registration successful! Now you can access your store at <b>' . $subdomain . '.localhost/ecart/</b> (add this to your hosts file if needed).'
-            ]);
+            // Show success message and redirect
+            session()->setFlashdata('success', 'Store registered successfully!');
+            header('Location: ' . base_url('masteradmin/dashboard'));
+            exit;
         }
-        return view('register');
+        return view('masteradmin/register');
     }
 } 

@@ -6,5 +6,5 @@ class StoreModel extends Model
 {
     protected $table = 'stores';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['name', 'subdomain', 'email', 'password', 'created_at'];
+    protected $allowedFields = ['name', 'subdomain', 'email', 'password', 'created_at', 'status'];
 } 
